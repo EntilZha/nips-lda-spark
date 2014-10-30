@@ -4,16 +4,11 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.lib.LDA
 import scala.io
+import scala.collection.mutable.Map
 
 object Main {
-  def main(args:Array[String]): Unit = {
-    val serializer = "org.apache.spark.serializer.KryoSerializer"
-    val conf = new SparkConf()
-                  .setMaster("local")
-                  .setAppName("nips-lda")
-    conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-    conf.set("spark.kryo.registrator", "org.apache.spark.graphx.GraphKryoRegistrator")
-    val sc = new SparkContext(conf)
+  def edgesVocabFromText(sc:SparkContext):
+                        (RDD[(LDA.WordId, LDA.DocId)], Array[String], Map[String, LDA.WordId]) = {
     val stopWords = io.Source.fromFile("data/stop-words.txt").getLines().map(l => l.trim()).toSet
     val docs = sc.wholeTextFiles("data/nipstxt/**").map({case (name, contents) =>
       (name, contents.replaceAll("[^A-Za-z']+", " ").trim.toLowerCase.split("\\s+").filter(w => !stopWords(w)))
@@ -25,13 +20,42 @@ object Main {
         token => (vocabLookup(token), Math.abs(name.hashCode).asInstanceOf[LDA.DocId])
       )
     })
-    val model = new LDA(edges, 50)
-    model.iterate(10)
+    (edges, vocab, vocabLookup)
+  }
+  def edgesVocabFromEdgeListDictionary(sc:SparkContext):
+                                      (RDD[(LDA.WordId, LDA.DocId)], Array[String], Map[String, LDA.WordId]) = {
+    val doc = sc.textFile("data/numeric-nips/counts.tsv")
+    val edges = doc.flatMap(line => {
+      val l = line.split("\t")
+      val wordId:LDA.WordId = l(0).toLong
+      val docId:LDA.DocId = l(1).toLong
+      val occurrences = l(2).toInt
+      List.fill[(LDA.WordId, LDA.DocId)](occurrences)((wordId, docId))
+    })
+    val vocab = io.Source.fromFile("data/numeric-nips/dictionary.txt").getLines().toArray
+    var vocabLookup = scala.collection.mutable.Map[String, LDA.WordId]()
+    for (i <- 0 until vocab.length) {
+      vocabLookup += vocab(i) -> i
+    }
+    (edges, vocab, vocabLookup)
+  }
+  def main(args:Array[String]): Unit = {
+    val serializer = "org.apache.spark.serializer.KryoSerializer"
+    val conf = new SparkConf()
+                  .setMaster("local")
+                  .setAppName("nips-lda")
+    conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+    conf.set("spark.kryo.registrator", "org.apache.spark.graphx.GraphKryoRegistrator")
+    val sc = new SparkContext(conf)
+    val (edges, vocab, vocabLookup) = edgesVocabFromEdgeListDictionary(sc)//edgesVocabFromText(sc)
+    val model = new LDA(edges, 50, logIter = 1)
+    val ITERATIONS = 50
+    model.iterate(ITERATIONS)
     val words = model.topWords(15)
     sc.stop()
-    for (i <- 0 to 49) {
+    for (i <- 0 until 50) {
       print("Topic " + i.toString + ": ")
-      for (w <- 0 to 14) {
+      for (w <- 0 until 15) {
         val word = vocab(words(i)(w)._2.toInt)
         val count = words(i)(w)._1
         print(count.toString + "*" + word + " ")
