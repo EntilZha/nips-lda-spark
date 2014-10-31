@@ -48,8 +48,8 @@ object Main {
     conf.set("spark.kryo.registrator", "org.apache.spark.graphx.GraphKryoRegistrator")
     val sc = new SparkContext(conf)
     val (edges, vocab, vocabLookup) = edgesVocabFromEdgeListDictionary(sc)//edgesVocabFromText(sc)
-    val model = new LDA(edges, 50, logIter = 1)
-    val ITERATIONS = 50
+    val model = new LDA(edges, 50, loggingInterval = 1, loggingLikelihood = false, loggingTime = false)
+    val ITERATIONS = 10
     model.iterate(ITERATIONS)
     val words = model.topWords(15)
     sc.stop()
