@@ -6,7 +6,7 @@ import org.apache.spark.graphx.lib.LDA
 import scala.io
 import scala.collection.mutable.Map
 
-object Main {
+object NipsLda {
   def edgesVocabFromText(sc:SparkContext):
                         (RDD[(LDA.WordId, LDA.DocId)], Array[String], Map[String, LDA.WordId]) = {
     val stopWords = io.Source.fromFile("data/stop-words.txt").getLines().map(l => l.trim()).toSet
