@@ -47,10 +47,10 @@ object Main {
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "org.apache.spark.graphx.GraphKryoRegistrator")
     val sc = new SparkContext(conf)
-    val (edges, vocab, vocabLookup) = edgesVocabFromEdgeListDictionary(sc)//edgesVocabFromText(sc)
+    val (edges, vocab, vocabLookup) = edgesVocabFromEdgeListDictionary(sc)
     val model = new LDA(edges, 50, loggingInterval = 1, loggingLikelihood = false, loggingTime = false)
     val ITERATIONS = 10
-    model.iterate(ITERATIONS)
+    model.train(ITERATIONS)
     val words = model.topWords(15)
     sc.stop()
     for (i <- 0 until 50) {
