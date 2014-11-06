@@ -32,7 +32,7 @@ object NipsLda {
       val occurrences = l(2).toInt
       List.fill[(LDA.WordId, LDA.DocId)](occurrences)((wordId, docId))
     })
-    val vocab = io.Source.fromFile("data/numeric-nips/dictionary.txt").getLines().toArray
+    val vocab = io.Source.fromFile("~/nips-lda-spark/data/numeric-nips/dictionary.txt").getLines().toArray
     var vocabLookup = scala.collection.mutable.Map[String, LDA.WordId]()
     for (i <- 0 until vocab.length) {
       vocabLookup += vocab(i) -> i
