@@ -24,7 +24,7 @@ object NipsLda {
   }
   def edgesVocabFromEdgeListDictionary(sc:SparkContext):
                                       (RDD[(LDA.WordId, LDA.DocId)], Array[String], Map[String, LDA.WordId]) = {
-    val doc = sc.textFile("data/numeric-nips/counts.tsv")
+    val doc = sc.textFile("/root/spark/nips-lda-spark/data/numeric-nips/counts.tsv")
     val edges = doc.flatMap(line => {
       val l = line.split("\t")
       val wordId:LDA.WordId = l(0).toLong
@@ -32,7 +32,7 @@ object NipsLda {
       val occurrences = l(2).toInt
       List.fill[(LDA.WordId, LDA.DocId)](occurrences)((wordId, docId))
     })
-    val vocab = io.Source.fromFile("~/nips-lda-spark/data/numeric-nips/dictionary.txt").getLines().toArray
+    val vocab = io.Source.fromFile("/root/spark/nips-lda-spark/data/numeric-nips/dictionary.txt").getLines().toArray
     var vocabLookup = scala.collection.mutable.Map[String, LDA.WordId]()
     for (i <- 0 until vocab.length) {
       vocabLookup += vocab(i) -> i
