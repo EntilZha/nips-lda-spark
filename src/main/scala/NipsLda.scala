@@ -45,7 +45,7 @@ object NipsLda {
     val serializer = "org.apache.spark.serializer.KryoSerializer"
     val conf = new SparkConf()
                   //.setMaster("local")
-                  .setMaster("spark://172.31.15.80:7077")
+                  .setMaster("spark://ec2-54-148-5-84.us-west-2.compute.amazonaws.com:7077")
                   .setAppName("nips-lda")
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "org.apache.spark.graphx.GraphKryoRegistrator")
