@@ -9,8 +9,8 @@ import scala.collection.mutable.Map
 object NipsLda {
   def edgesVocabFromText(sc:SparkContext):
                         (RDD[(LDA.WordId, LDA.DocId)], Array[String], Map[String, LDA.WordId]) = {
-    val stopWords = io.Source.fromFile("data/stop-words.txt").getLines().map(l => l.trim()).toSet
-    val docs = sc.wholeTextFiles("data/nipstxt/**").map({case (name, contents) =>
+    val stopWords = io.Source.fromFile("/root/nips-lda/spark/data/stop-words.txt").getLines().map(l => l.trim()).toSet
+    val docs = sc.wholeTextFiles("s3n://files.sparks.public/data/enwiki_category_text/part-00000").map({case (name, contents) =>
       (name, contents.replaceAll("[^A-Za-z']+", " ").trim.toLowerCase.split("\\s+").filter(w => !stopWords(w)))
     })
     val tokens = docs.flatMap({case (name, contents) => contents})
@@ -52,7 +52,7 @@ object NipsLda {
     val sc = new SparkContext(conf)
     println(sc.getConf.getAll.mkString(","))
     sc.addSparkListener(new org.apache.spark.scheduler.JobLogger())
-    val (edges, vocab, vocabLookup) = edgesVocabFromEdgeListDictionary(sc)
+    val (edges, vocab, vocabLookup) = edgesVocabFromText(sc)
     val model = new LDA(edges, 50, loggingInterval = 1, loggingLikelihood = false, loggingTime = true)
     val ITERATIONS = 10
     model.train(ITERATIONS)
