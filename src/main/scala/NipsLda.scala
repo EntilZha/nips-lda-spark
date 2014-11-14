@@ -54,12 +54,13 @@ object NipsLda {
     println(sc.getConf.getAll.mkString(","))
     sc.addSparkListener(new org.apache.spark.scheduler.JobLogger())
     val (edges, vocab, vocabLookup) = edgesVocabFromText(sc)
-    val model = new LDA(edges, 50, loggingInterval = 1, loggingLikelihood = false, loggingTime = true)
+    val NUM_TOPICS = 100
+    val model = new LDA(edges, NUM_TOPICS, loggingInterval = 1, loggingLikelihood = false, loggingTime = true)
     val ITERATIONS = 10
     model.train(ITERATIONS)
     val words = model.topWords(15)
     sc.stop()
-    for (i <- 0 until 50) {
+    for (i <- 0 until NUM_TOPICS) {
       print("Topic " + i.toString + ": ")
       for (w <- 0 until 15) {
         val word = vocab(words(i)(w)._2.toInt)
