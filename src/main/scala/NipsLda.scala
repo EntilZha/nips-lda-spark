@@ -10,7 +10,7 @@ object NipsLda {
   def edgesVocabFromText(sc:SparkContext):
                         (RDD[(LDA.WordId, LDA.DocId)], Array[String], Map[String, LDA.WordId]) = {
     val stopWords = io.Source.fromFile("/root/nips-lda-spark/data/stop-words.txt").getLines().map(l => l.trim()).toSet
-    val docs = sc.textFile("s3n://files.sparks.public/data/enwiki_category_text/part-00000").map({contents =>
+    val docs = sc.textFile("s3n://files.sparks.public/data/enwiki_category_text/part-0000[0-1]").map({contents =>
       (contents.hashCode(), contents.replaceAll("[^A-Za-z']+", " ").trim.toLowerCase.split("\\s+").filter(w => !stopWords(w)))
     })
 
