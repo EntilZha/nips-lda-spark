@@ -16,9 +16,9 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-api" % "1.7.2",
   "org.slf4j" % "slf4j-log4j12" % "1.7.2",
   "org.scalatest" %% "scalatest" % "1.9.1" % "test",
-  "org.apache.spark" % "spark-core_2.10" % "1.2.0-SNAPSHOT",
-  "org.apache.spark" % "spark-mllib_2.10" % "1.2.0-SNAPSHOT",
-  "org.apache.spark" % "spark-graphx_2.10" % "1.2.0-SNAPSHOT",
+  "org.apache.spark" % "spark-core_2.10" % "1.3.0-SNAPSHOT",
+  "org.apache.spark" % "spark-mllib_2.10" % "1.3.0-SNAPSHOT",
+  "org.apache.spark" % "spark-graphx_2.10" % "1.3.0-SNAPSHOT",
   "org.apache.commons" % "commons-compress" % "1.7",
   "commons-io" % "commons-io" % "2.4",
   "org.jblas" % "jblas" % "1.2.3"

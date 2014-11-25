@@ -1,10 +1,12 @@
 package nipslda
 
+import org.apache.spark.mllib.util.LDADataGenerator
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.lib.LDA
 import scala.io
 import scala.collection.mutable.Map
+import breeze.stats.distributions
 
 object NipsLda {
   def edgesVocabFromText(sc:SparkContext):
@@ -42,15 +44,31 @@ object NipsLda {
     }
     (edges, vocab, vocabLookup)
   }
-  def main(args:Array[String]): Unit = {
-    val serializer = "org.apache.spark.serializer.KryoSerializer"
+
+  def runGenerativeLDA(sc:SparkContext): Unit = {
+    val alpha = 0.1
+    val beta = 0.1
+    val nTopics = 100
+    val nDocs = 2483
+    val nWords = 14036
+    val nTokensPerDoc = 1321
+    val corpus = LDADataGenerator.generateCorpus(sc, alpha, beta, nTopics, nDocs, nWords, nTokensPerDoc)
+    val model = new LDA(corpus, loggingInterval = 1, loggingTime = true)
+    val iterations = 10
+    model.train(iterations)
+    sc.stop()
+  }
+
+  def getSparkContext(master:String):SparkContext = {
     val conf = new SparkConf()
-                  //.setMaster("local")
-                  //.setMaster("spark://ec2-54-148-5-84.us-west-2.compute.amazonaws.com:7077")
-                  .setAppName("nips-lda")
+                  .setMaster(master)
+                  .setAppName("LDA")
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "org.apache.spark.graphx.GraphKryoRegistrator")
-    val sc = new SparkContext(conf)
+    return new SparkContext(conf)
+  }
+
+  def runLDA(sc:SparkContext): Unit = {
     println(sc.getConf.getAll.mkString(","))
     sc.addSparkListener(new org.apache.spark.scheduler.JobLogger())
     val (edges, vocab, vocabLookup) = edgesVocabFromText(sc)
@@ -68,6 +86,18 @@ object NipsLda {
         print(count.toString + "*" + word + " ")
       }
       println()
+    }
+  }
+
+  def main(args:Array[String]): Unit = {
+    if (args.length == 0) {
+      throw new Exception("Must specify master")
+    }
+    if (args.length == 1 || args(1) == "lda") {
+      runLDA(getSparkContext(args(0)))
+    }
+    if (args(1) == "gen") {
+      runGenerativeLDA(getSparkContext(args(0)))
     }
   }
 }
