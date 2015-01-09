@@ -25,9 +25,10 @@ object NipsLda {
     })
     (edges, vocab, vocabLookup)
   }
-  def edgesVocabFromEdgeListDictionary(sc:SparkContext):
+  def edgesVocabFromEdgeListDictionary(sc:SparkContext, countsFile:String, dictionaryFile:String):
                                       (RDD[(LDA.WordId, LDA.DocId)], Array[String], Map[String, LDA.WordId]) = {
-    val doc = sc.textFile("s3n://amplab-lda/counts.tsv")
+    val doc = sc.textFile(countsFile)
+    //val doc = sc.textFile("s3n://amplab-lda/counts.tsv")
     //val doc = sc.textFile("/Users/pedro/Code/nips-lda/data/numeric-nips/counts.tsv")
     val edges = doc.flatMap(line => {
       val l = line.split("\t")
@@ -36,8 +37,7 @@ object NipsLda {
       val occurrences = l(2).toInt
       List.fill[(LDA.WordId, LDA.DocId)](occurrences)((wordId, docId))
     })
-    val vocab = io.Source.fromFile("/root/nips-lda-spark/data/numeric-nips/dictionary.txt").getLines().toArray
-    //val vocab = io.Source.fromFile("/Users/pedro/Code/nips-lda/data/numeric-nips/dictionary.txt").getLines().toArray
+    val vocab = io.Source.fromFile(dictionaryFile).getLines().toArray
     var vocabLookup = scala.collection.mutable.Map[String, LDA.WordId]()
     for (i <- 0 until vocab.length) {
       vocabLookup += vocab(i) -> i
@@ -46,14 +46,14 @@ object NipsLda {
   }
 
   def runGenerativeLDA(sc:SparkContext): Unit = {
-    val alpha = 0.1
-    val beta = 0.1
-    val nTopics = 100
-    val nDocs = 2483
+    val alpha = 0.01
+    val beta = 0.01
+    val nTopics = 1000
+    val nDocs = 300
     val nWords = 14036
-    val nTokensPerDoc = 1321
+    val nTokensPerDoc = 1000
     val corpus = LDADataGenerator.generateCorpus(sc, alpha, beta, nTopics, nDocs, nWords, nTokensPerDoc)
-    val model = new LDA(corpus, loggingInterval = 1, loggingTime = true)
+    val model = new LDA(corpus, nTopics = nTopics, loggingInterval = 1, loggingTime = true, alpha = alpha, beta = beta)
     val iterations = 10
     model.train(iterations)
     sc.stop()
@@ -71,8 +71,13 @@ object NipsLda {
   def runLDA(sc:SparkContext): Unit = {
     println(sc.getConf.getAll.mkString(","))
     sc.addSparkListener(new org.apache.spark.scheduler.JobLogger())
-    val (edges, vocab, vocabLookup) = edgesVocabFromText(sc)
-    val NUM_TOPICS = 100
+    //"/root/nips-lda-spark/data/numeric-nips/dictionary.txt"
+    val (edges, vocab, vocabLookup) = edgesVocabFromEdgeListDictionary(
+      sc,
+      "/Users/pedro/Code/nips-lda/data/numeric-nips/counts.tsv",
+      "/Users/pedro/Code/nips-lda/data/numeric-nips/dictionary.txt"
+    )
+    val NUM_TOPICS = 1000
     val model = new LDA(edges, NUM_TOPICS, loggingInterval = 1, loggingLikelihood = false, loggingTime = true)
     val ITERATIONS = 10
     model.train(ITERATIONS)
