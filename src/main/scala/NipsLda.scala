@@ -49,9 +49,9 @@ object NipsLda {
     val alpha = 0.01
     val beta = 0.01
     val nTopics = 2000
-    val nDocs = 250000
+    val nDocs = 200000
     val nWords = 75000
-    val nTokensPerDoc = 120
+    val nTokensPerDoc = 100
     val corpus = LDADataGenerator.generateCorpus(sc, alpha, beta, nTopics, nDocs, nWords, nTokensPerDoc)
     val model = new LDA(corpus, nTopics = nTopics, loggingInterval = 1, loggingTime = true, alpha = alpha, beta = beta)
     val iterations = 15
