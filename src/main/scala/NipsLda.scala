@@ -80,7 +80,7 @@ object NipsLda {
       "s3n://amplab-lda/counts.tsv",
       "/root/nips-lda-spark/data/numeric-nips/dictionary.txt"
     )
-    val NUM_TOPICS = 1000
+    val NUM_TOPICS = 5000
     val model = new LDA(edges, NUM_TOPICS, loggingInterval = 1, loggingLikelihood = false, loggingTime = true)
     val ITERATIONS = 15
     model.train(ITERATIONS)
