@@ -65,7 +65,6 @@ object NipsLda {
                   .setAppName("LDA")
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "org.apache.spark.graphx.GraphKryoRegistrator")
-    conf.set("spark.executor.memory", "4g")
     val sc = new SparkContext(conf)
     println("SPARK CONFIGURATION")
     println(sc.getConf.getAll.mkString("\n"))
