@@ -48,13 +48,13 @@ object NipsLda {
   def runGenerativeLDA(sc:SparkContext): Unit = {
     val alpha = 0.01
     val beta = 0.01
-    val nTopics = 1000
-    val nDocs = 300
-    val nWords = 14036
-    val nTokensPerDoc = 1000
+    val nTopics = 2000
+    val nDocs = 250000
+    val nWords = 75000
+    val nTokensPerDoc = 120
     val corpus = LDADataGenerator.generateCorpus(sc, alpha, beta, nTopics, nDocs, nWords, nTokensPerDoc)
     val model = new LDA(corpus, nTopics = nTopics, loggingInterval = 1, loggingTime = true, alpha = alpha, beta = beta)
-    val iterations = 10
+    val iterations = 15
     model.train(iterations)
     sc.stop()
   }
@@ -65,7 +65,11 @@ object NipsLda {
                   .setAppName("LDA")
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "org.apache.spark.graphx.GraphKryoRegistrator")
-    return new SparkContext(conf)
+    conf.set("spark.executor.memory", "4g")
+    val sc = new SparkContext(conf)
+    println("SPARK CONFIGURATION")
+    println(sc.getConf.getAll.mkString("\n"))
+    sc
   }
 
   def runLDA(sc:SparkContext): Unit = {
