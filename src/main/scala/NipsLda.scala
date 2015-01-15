@@ -48,7 +48,7 @@ object NipsLda {
   def runGenerativeLDA(sc:SparkContext): Unit = {
     val alpha = 0.01
     val beta = 0.01
-    val nTopics = 100
+    val nTopics = 1000
     val nDocs = 250000
     val nWords = 75000
     val nTokensPerDoc = 120
