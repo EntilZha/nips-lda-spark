@@ -77,7 +77,7 @@ object NipsLda {
     //"/root/nips-lda-spark/data/numeric-nips/dictionary.txt"
     val (edges, vocab, vocabLookup) = edgesVocabFromEdgeListDictionary(
       sc,
-      "/root/nips-lda-spark/data/numeric-nips/counts.tsv",
+      "s3n://amplab-lda/counts.tsv",
       "/root/nips-lda-spark/data/numeric-nips/dictionary.txt"
     )
     val NUM_TOPICS = 1000
