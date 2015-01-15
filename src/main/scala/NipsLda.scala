@@ -78,7 +78,7 @@ object NipsLda {
     val (edges, vocab, vocabLookup) = edgesVocabFromEdgeListDictionary(
       sc,
       "/root/nips-lda-spark/data/numeric-nips/counts.tsv",
-      "/root/nips-lda-spar/data/numeric-nips/dictionary.txt"
+      "/root/nips-lda-spark/data/numeric-nips/dictionary.txt"
     )
     val NUM_TOPICS = 1000
     val model = new LDA(edges, NUM_TOPICS, loggingInterval = 1, loggingLikelihood = false, loggingTime = true)
